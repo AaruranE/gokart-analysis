@@ -1,8 +1,10 @@
 ---
 title: "Go-Karting Analysis"
-author: "Aaruran Elamurugaiyan"
+author: "Aaruran Loganathan"
 date: "June 17, 2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -44,7 +46,8 @@ ggplot(times.across.laps, aes(x=`Lap Number`, y=Time, col=Driver)) + geom_point(
 
 It's pretty easy to see when crashes happened.
 ```{r}
-ggplot(times.across.laps, aes(x=`Lap Number`, y=Time)) + geom_point() + geom_line() + facet_wrap(Driver ~ .) + geom_smooth()
+ggplot(times.across.laps, aes(x=`Lap Number`, y=Time)) +
+  geom_point() + geom_line() + facet_wrap(Driver ~ .) + geom_smooth()
 ```
 
 By inspection, every lap over 40 seconds is a crash. However, there are a few 'quick-fix' crashes that are under this limit which are harder to distinguish from this data alone.
@@ -53,7 +56,9 @@ Let's take a closer look at each person, instead of comparing them.
 
 ```{r}
 for(d in c('Nishanth', 'Adboy', 'Abdulhadi', 'Aaruran')) {
-  p <- ggplot(times.across.laps %>% filter(eval(Driver==d)), aes(x=`Lap Number`, y=Time)) + geom_point() + ggtitle(paste(d, '\'s Lap Times', sep="")) + geom_smooth()
+  p <- ggplot(times.across.laps %>% filter(eval(Driver==d)))+
+    aes(x=`Lap Number`, y=Time) + geom_point() +
+    ggtitle(paste(d, '\'s Lap Times', sep="")) + geom_smooth()
   print(p)
 }
 ```
@@ -73,7 +78,8 @@ Use google to help you do conversions if you want to check my math.
 convert_to_kmh <- function(x) {
   return(x * 1e-3 * 3600)
 }
-ggplot(times.across.laps, aes(x=`Lap Number`, y=convert_to_kmh(140.613/Time), col=Driver)) + geom_point() + geom_line() + ylab('Average Speed (km/h)')
+ggplot(times.across.laps, aes(x=`Lap Number`, y=convert_to_kmh(140.613/Time), col=Driver)) +
+  geom_point() + geom_line() + ylab('Average Speed (km/h)')
 ```
 
 Notice that we gradually got faster and faster around the track, as we became more comfortable with the turns and the acceleration of the track.
@@ -100,13 +106,16 @@ Now, let's see how the overtaking took place.
 ```{r}
 cumulative.times.melted <- cumulative.times %>% gather(Nishanth, Adboy, Abdulhadi, Aaruran, key=Driver, value=TimeStamp)
 
-ggplot(cumulative.times.melted,aes(x=TimeStamp, y=Lap, col=Driver)) + geom_point() + geom_line() + xlab('Elapsed Time in Seconds')
+ggplot(cumulative.times.melted,aes(x=TimeStamp, y=Lap, col=Driver)) +
+  geom_point() + geom_line() + xlab('Elapsed Time in Seconds')
 ```
 
 We can see that Abdulhadi overtook me (Aaruran) right around the 18th lap.
 ```{r}
-p <- ggplot(cumulative.times.melted, aes(x=TimeStamp, y=Driver, col=Lap)) + geom_point() + ggtitle("Laps Completed")
-ggplotly(p)
+p <- ggplot(cumulative.times.melted, aes(x=TimeStamp, y=Driver, col=Lap)) + 
+  geom_point() + ggtitle("Laps Completed")
+# ggplotly(p)
+print(p)
 ```
 This plot is simple but also revealing. For instance, we have the humiliating knowledge that Nish finished lap 10 shortly after Adboy finished lap 5.
 
@@ -117,7 +126,8 @@ As well, we can see that Nish finished 15 laps in under 6 minutes. No wonder he 
 Adboy crashed a lot. Let's do him a kindness and filter out all crashes, to compare overall lap times. 
 
 ```{r}
-ggplot(times.across.laps %>% filter(Time <= 40), aes(x=`Lap Number`, y=Time)) + geom_point() + geom_smooth() + facet_wrap(Driver ~ .)
+ggplot(times.across.laps %>% filter(Time <= 40), aes(x=`Lap Number`, y=Time)) + 
+  geom_point() + geom_smooth() + facet_wrap(Driver ~ .)
 ```
 
 I (Aaruran) have a peculiar outlier, and I think that signifies one crash I had, which I managed to recover from without external help. I think I had crashed into somebody else.
@@ -129,7 +139,11 @@ Interestingly, it looks like Nish had trouble very 8 laps or so. This was probab
 
 ```{r}
 for(d in c('Nishanth', 'Adboy', 'Abdulhadi', 'Aaruran')) {
-  p <- ggplot(times.across.laps %>% filter(Time <= 40)  %>%filter(eval(Driver==d)), aes(x=`Lap Number`, y=Time)) + geom_point() + ggtitle(paste(d, '\'s Lap Times, ignoring crashes', sep="")) + geom_smooth()
+  p <- ggplot(times.across.laps %>% filter(Time <= 40)  %>% 
+                filter(eval(Driver==d)), aes(x=`Lap Number`, y=Time)) +
+    geom_point() + 
+    ggtitle(paste(d, '\'s Lap Times, ignoring crashes', sep="")) + 
+    geom_smooth()
   print(p)
 }
 ```
